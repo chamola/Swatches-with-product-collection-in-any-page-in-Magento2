@@ -1,0 +1,98 @@
+<?php
+/* Built by Manoj Chamola */
+use Magento\Framework\App\Action\Action;
+
+$productCollection = $this->getProductCollection();
+$imageBlock =  $block->getLayout()->createBlock('Magento\Catalog\Block\Product\ListProduct');
+$showCart = true;
+$type = 'widget-new-grid';
+$viewMode = 'grid'; 
+$image = 'category_page_grid';
+$pos = $block->getPositioned();
+?>
+<div class="title">
+    <strong class="newproduct">New Product</strong>
+</div>
+
+<div class="products-grid">
+    <div id="topseller-slider" class="products list items product-items owlslider" data-jcarousel="true">
+        <ul class="product-items" id="topsellerowlslider">
+            <?php $iterator = 1; ?>
+            <?php foreach ($productCollection as $_product): ?>
+            <?php $productImage = $imageBlock->getImage($_product, 'category_page_grid'); 
+                if ($pos == null) {                                                        
+                    $position = ' style="left:' . $productImage->getWidth() . 'px;'
+                        . 'top:' . $productImage->getHeight() . 'px;"';
+                }
+                ?>
+            <?php /* @escapeNotVerified */ echo($iterator++ == 1) ? '<li class="product-item"><div class="product-item-info">' : '</div></li><li class="product-item"><div class="product-item-info">' ?>
+            <a href="<?php echo $_product->getProductUrl(); ?>"><?php echo $productImage->toHtml()  ?></a>
+            <div class="product details product-item-details">
+                <strong class="product name product-item-name">
+                <a class="product-item-link"  href="<?php /* @escapeNotVerified */ echo $_product->getProductUrl() ?>">
+                <?php /* @escapeNotVerified */ echo $_product->getName(); ?>
+                </a>
+                </strong>
+                <?php if ($showCart): ?>
+                <?php echo $this->getProductPricetoHtml($_product, $type); ?>
+                <?php echo $block->getProductDetailsHtml($_product); ?>
+                <div class="product-item-inner">
+                    <div class="product actions product-item-actions">
+                        <div class="actions-primary"<?php echo strpos($pos, $viewMode . '-primary') ? $position : ''; ?>>
+                            <?php if ($_product->isSaleable()): ?>
+                            <?php $postParams = $block->getAddToCartPostParams($_product); ?>
+                            <form data-role="tocart-form" action="<?php /* @escapeNotVerified */ echo $postParams['action']; ?>" method="post">
+                                <input type="hidden" name="product" value="<?php /* @escapeNotVerified */ echo $postParams['data']['product']; ?>">
+                                <input type="hidden" name="<?php /* @escapeNotVerified */ echo Action::PARAM_NAME_URL_ENCODED; ?>" value="<?php /* @escapeNotVerified */ echo $postParams['data'][Action::PARAM_NAME_URL_ENCODED]; ?>">
+                                <?php echo $block->getBlockHtml('formkey')?>
+                                <button type="submit"
+                                    title="<?php echo $block->escapeHtml(__('Add to Cart')); ?>"
+                                    class="action tocart primary">
+                                <span><?php /* @escapeNotVerified */ echo __('Add to Cart') ?></span>
+                                </button>
+                            </form>
+                            <?php else: ?>
+                            <?php if ($_product->getIsSalable()): ?>
+                            <div class="stock available"><span><?php /* @escapeNotVerified */ echo __('In stock') ?></span></div>
+                            <?php else: ?>
+                            <div class="stock unavailable"><span><?php /* @escapeNotVerified */ echo __('Out of stock') ?></span></div>
+                            <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="actions-secondary" data-role="add-to-links">
+                            <?php if ($this->helper('Magento\Wishlist\Helper\Data')->isAllow()): ?>
+                                <a href="#"
+                                   data-post='<?php /* @escapeNotVerified */ echo $block->getAddToWishlistParams($_product); ?>'
+                                   class="action towishlist" data-action="add-to-wishlist"
+                                   title="<?php /* @escapeNotVerified */ echo __('Add to Wish List') ?>">
+                                    <span><?php /* @escapeNotVerified */ echo __('Add to Wish List') ?></span>
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($block->getAddToCompareUrl()) ?>
+                                <?php $compareHelper = $this->helper('Magento\Catalog\Helper\Product\Compare');?>
+                                <a href="#" class="action tocompare"
+                                   data-post='<?php /* @escapeNotVerified */ echo $compareHelper->getPostDataParams($_product);?>'
+                                   title="<?php /* @escapeNotVerified */ echo __('Add to Compare') ?>">
+                                    <span><?php /* @escapeNotVerified */ echo __('Add to Compare') ?></span>
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php echo($iterator == count($productCollection)+1) ? '</div></li>' : '' ?>
+            <?php endforeach ?>
+        </ul>
+    </div>
+</div>
+</div>
+<?php if (!$block->isRedirectToCartEnabled()) : ?>
+<script type="text/x-magento-init">
+    {
+        "[data-role=tocart-form], .form.map.checkout": {
+            "catalogAddToCart": {}
+        }
+    }
+</script>
+<?php endif; ?>
